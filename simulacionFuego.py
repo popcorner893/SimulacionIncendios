@@ -10,13 +10,6 @@ class ejecutarSimulacion:
         
         self.diccionarioParámetros = diccionarioParámetros
 
-        self.colores_representativos = {
-        "Bosque": (175,239,202),   # #D3F8E2
-        "Carretera": (139, 165, 193),  # #8BA5C1
-        "Ríos": (144, 218, 238),     # #90DAEE
-        "Ciudad": (245, 240, 229)    # #F5F0E5
-        }
-
         self.valores_categoria = {
         "Bosque": 0,
         "Carretera": 1,
@@ -27,29 +20,31 @@ class ejecutarSimulacion:
     
 
     # Función principal para procesar la imagen
-    def procesar_imagen_a_matriz(self,ruta_imagen, ancho, alto):
-        
-        # Función para calcular la distancia euclidiana en el espacio RGB
-        def distancia_rgb(pixel, color_representativo):
-            return np.sqrt(sum((p - c) ** 2 for p, c in zip(pixel, color_representativo)))
-
-        # Función para clasificar un píxel según el color más cercano
+    def procesar_imagen_a_matriz(self, ruta_imagen, ancho, alto):
+        # Función para clasificar un píxel según los criterios especificados
         def clasificar_pixel(pixel):
-            distancias = {categoria: distancia_rgb(pixel, color) for categoria, color in self.colores_representativos.items()}
-            return min(distancias, key=distancias.get)  # Devolver la categoría con menor distancia
+            r, g, b = pixel
+            if g > b and g >= 230 and r < 230:  # Bosque
+                return "Bosque" 
+            elif b > g and b >= 230:  # Ríos
+                return "Ríos"
+            elif r >= 230 and g >= 230 and b >= 220:  # Ciudad
+                return "Ciudad"
+            else:  # Carreteras
+                return "Carretera"
 
         # Cargar la imagen
         imagen = Image.open(ruta_imagen)
-        
+
         # Redimensionar la imagen al tamaño deseado
         imagen = imagen.resize((ancho, alto))
-        
+
         # Convertir la imagen a un array de píxeles RGB
         pixeles = np.array(imagen)
-        
+
         # Crear una matriz para almacenar las categorías
         matriz_categorias = np.zeros((alto, ancho), dtype=int)
-        
+
         # Clasificar cada píxel y asignarlo a la matriz
         for y in range(alto):
             for x in range(ancho):
@@ -57,8 +52,6 @@ class ejecutarSimulacion:
                 categoria = clasificar_pixel(pixel)
                 matriz_categorias[y, x] = self.valores_categoria[categoria]
 
-        
-        
         return matriz_categorias
 
     def inicializar_tablero_desde_matriz(self, matriz):
@@ -66,7 +59,7 @@ class ejecutarSimulacion:
         filas = len(matriz)
         columnas = len(matriz[0])
         tablero = [[{"estado": 0, "tipo": None, "propaga": True} for _ in range(columnas)] for _ in range(filas)]
-        
+
         for fila in range(filas):
             for columna in range(columnas):
                 tipo = matriz[fila][columna]
