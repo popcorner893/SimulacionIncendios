@@ -2,6 +2,7 @@ from customtkinter import *
 import simulacionFuego
 import Utilidades
 from PIL import Image
+from tkinter import messagebox
 
 
 class MainApp(CTk):
@@ -16,8 +17,17 @@ class MainApp(CTk):
         self.geometry("1280x720")
         self.resizable(False, False)
 
+
+        #Zona de Declaración de Parámetros importantes
+
+        self.diccionarioValores = {}
+
+        self.valoresMatrizViento = {}
+        self.valoresMatrizAltura = {}
+
+
   
-        
+        #Decoración y Fondo de app
         imagenFondo = Utilidades.icono(self, "FondoDegradadoMain", 1280, 720)
         imagenFondo.place(relx = 0, rely = 0, anchor = "nw")    
 
@@ -103,7 +113,6 @@ class MainApp(CTk):
         def ventanaSobreVentanaViento():
             nueva_Ventana = CTkToplevel(self)
             nueva_Ventana.title("Configurar Matriz de Viento")
-            nueva_Ventana.geometry("200x200")
            
 
             nueva_Ventana.rowconfigure(0, weight = 9)
@@ -115,23 +124,36 @@ class MainApp(CTk):
             panelSuperior.columnconfigure((0,1,2), weight = 1)
             panelSuperior.grid(row = 0, column = 0, sticky = "nsew")
 
-            botonGuardar = Utilidades.botonAccion(nueva_Ventana, "Guardar Matriz de Viento", 20, "verde", 100, 35, lambda: None)
+            botonGuardar = Utilidades.botonAccion(nueva_Ventana, "Guardar Matriz de Viento", 20, "verde", 100, 35, lambda: obtener_valores())
             botonGuardar.grid(row = 1, column = 0)
 
             # Diccionario para almacenar las entradas
             entries = {}
 
+            # Función para validar números de hasta 1 decimal
+            def validar_entrada(texto):
+                if texto == "" or texto == "-":
+                    return True  # Permitir vacío o signo negativo inicial
+                try:
+                    valor = float(texto)
+                    return len(texto.split(".")[-1]) <= 1  # Máximo 1 dígito decimal
+                except ValueError:
+                    return False
+
             # Crear entradas en cada celda
             for fila in range(3):  # 3 filas
                 for columna in range(3):  # 3 columnas
                     # Crear un CTkEntry
+                    validate_command = nueva_Ventana.register(validar_entrada)
                     entry = CTkEntry(
                         panelSuperior,
                         border_color="black",  # Borde negro
                         border_width=2,
                         font = ("Labrada", 50), 
                         justify = "center", 
-                        placeholder_text="0"
+                        placeholder_text="0",
+                        validate="key",
+                        validatecommand=(validate_command, "%P")                        
                     )
                     entry.grid(row=fila, column=columna, sticky="nsew", padx=2, pady=2)  # Ajustar tamaño y posición
                     # Guardar la entrada en el diccionario usando la posición como clave
@@ -139,19 +161,94 @@ class MainApp(CTk):
 
             # Función para obtener los valores de todas las entradas
             def obtener_valores():
-                valores = {}
+            # Verificar si todas las entradas están llenas
                 for (fila, columna), entry in entries.items():
-                    valores[(fila, columna)] = entry.get()  # Obtener el texto de la entrada
-                print("Valores de las entradas:", valores)  # Imprimir en consola (puedes usarlo según necesites)
+                    valor = entry.get()
+                    if valor.strip() == "":  # Si está vacío
+                        messagebox.showerror("Error", "Todas las celdas deben estar llenas.")
+                        return  # Detener el guardado
 
+                    # Convertir coordenadas según el sistema y guardar el valor
+                    self.valoresMatrizViento[(columna - 1, 1 - fila)] = valor
+                
+                # Si todo es válido, imprimir los valores
+                print("Valores de las entradas (transformados):", self.valoresMatrizViento)
+                messagebox.showinfo("Éxito", "Matriz de viento guardada correctamente.")
+                nueva_Ventana.destroy()
 
     
 
         matrizDeAlturas = Utilidades.mediumText(panelIzquierdo, "Matriz de Alturas")
         matrizDeAlturas.pack(anchor = "nw", padx = 10, pady = 10)
 
-        matrizDeAlturasConfigurar = Utilidades.botonAccion(panelIzquierdo, "Configurar", 20, "verde", 180, 40, lambda: None)  
+        matrizDeAlturasConfigurar = Utilidades.botonAccion(panelIzquierdo, "Configurar", 20, "verde", 180, 40, lambda: ventanaSobreVentanaAlturas())  
         matrizDeAlturasConfigurar.pack(anchor = "nw", padx = 10, pady = 10)    
+
+
+        def ventanaSobreVentanaAlturas():
+            nueva_Ventana = CTkToplevel(self)
+            nueva_Ventana.title("Configurar Matriz de Alturas")
+           
+
+            nueva_Ventana.rowconfigure(0, weight = 9)
+            nueva_Ventana.rowconfigure(1, weight = 1)
+            nueva_Ventana.columnconfigure(1, weight = 1)
+
+            panelSuperior = CTkFrame(nueva_Ventana, fg_color= "white")
+            panelSuperior.rowconfigure((0,1,2), weight = 1)
+            panelSuperior.columnconfigure((0,1,2), weight = 1)
+            panelSuperior.grid(row = 0, column = 0, sticky = "nsew")
+
+            botonGuardar = Utilidades.botonAccion(nueva_Ventana, "Guardar Matriz de Alturas", 20, "verde", 100, 35, lambda: obtener_valores())
+            botonGuardar.grid(row = 1, column = 0)
+
+            # Diccionario para almacenar las entradas
+            entries = {}
+
+            # Función para validar números de hasta 1 decimal
+            def validar_entrada(texto):
+                if texto == "" or texto == "-":
+                    return True  # Permitir vacío o signo negativo inicial
+                try:
+                    valor = float(texto)
+                    return len(texto.split(".")[-1]) <= 1  # Máximo 1 dígito decimal
+                except ValueError:
+                    return False
+
+            # Crear entradas en cada celda
+            for fila in range(3):  # 3 filas
+                for columna in range(3):  # 3 columnas
+                    # Crear un CTkEntry
+                    validate_command = nueva_Ventana.register(validar_entrada)
+                    entry = CTkEntry(
+                        panelSuperior,
+                        border_color="black",  # Borde negro
+                        border_width=2,
+                        font = ("Labrada", 50), 
+                        justify = "center", 
+                        placeholder_text="0",
+                        validate="key",
+                        validatecommand=(validate_command, "%P")                        
+                    )
+                    entry.grid(row=fila, column=columna, sticky="nsew", padx=2, pady=2)  # Ajustar tamaño y posición
+                    # Guardar la entrada en el diccionario usando la posición como clave
+                    entries[(fila, columna)] = entry
+
+            # Función para obtener los valores de todas las entradas
+            def obtener_valores():
+            # Verificar si todas las entradas están llenas
+                for (fila, columna), entry in entries.items():
+                    valor = entry.get()
+                    if valor.strip() == "":  # Si está vacío
+                        messagebox.showerror("Error", "Todas las celdas deben estar llenas.")
+                        return  # Detener el guardado
+
+                    # Convertir coordenadas según el sistema y guardar el valor
+                    self.valoresMatrizAltura[(columna - 1, 1 - fila)] = valor
+                
+                # Si todo es válido, imprimir los valores
+                print("Valores de las entradas (transformados):", self.valoresMatrizViento)
+                messagebox.showinfo("Éxito", "Matriz de Altura guardada correctamente.")
 
 
         velocidad = Utilidades.mediumText(panelIzquierdo, "Velocidad del Viento")
@@ -274,17 +371,48 @@ class MainApp(CTk):
         #Panel Derecho - Botón para iniciar la simulación en una nueva ventana con la ayuda de Pygame
 
 
-        botonIniciar = Utilidades.botonAccion(panelDerecho, "Iniciar Simulación", 40, "#FC6161", 3, 3, lambda: simulacionFuego.ejecutarSimulacion.iniciar_juego())
+        botonIniciar = Utilidades.botonAccion(panelDerecho, "Iniciar Simulación", 40, "#FC6161", 3, 3, lambda: iniciarJuego())
         botonIniciar.configure(hover = False)
         botonIniciar.pack(expand = True )
-     
-      
-    
 
-if __name__ == "__main__":
-    app = MainApp()
-    app.mainloop()
+        def iniciarJuego():
 
+
+            #Comprobación de cuáles campos están vacíos y cuáles no, y asignación de sus valores al diccionario para mandarlos comoa argumento
+
+            if not self.valoresMatrizViento:        #Matriz Vacía
+                for fila in range(3):  # 3 filas
+                    for columna in range(3):
+                        self.valoresMatrizViento[(columna - 1, 1 - fila)] = 0
+
+                self.diccionarioValores["matrizViento"] = self.valoresMatrizViento
+
+            else: self.diccionarioValores["matrizViento"] = self.valoresMatrizViento
+                
+
+            if not self.valoresMatrizAltura:        #Matriz Vacía
+                for fila in range(3):  # 3 filas
+                    for columna in range(3):
+                        self.valoresMatrizAltura[(columna - 1, 1 - fila)] = 0
+
+                self.diccionarioValores["matrizAltura"] = self.valoresMatrizAltura
+
+            else: self.diccionarioValores["matrizViento"] = self.valoresMatrizAltura
+
+            if entradaVelocidad.get() == "":
+                self.diccionarioValores["velocidad"] = 0
+            else:
+                self.diccionarioValores["velocidad"] = float(entradaVelocidad.get())
+
+            if entradaHumedad.get() == "":
+                self.diccionarioValores["humedad"] = 0
+            else:
+                self.diccionarioValores["humedad"] = float(entradaHumedad.get())
+
+            if entradaDensidadVegetacion.get() == "":
+                self.diccionarioValores["densidadVegetacion"] = 0
+            else:
+                self.diccionarioValores["densidadVegetacion"] = float(entradaDensidadVegetacion.get())
 
 
 
