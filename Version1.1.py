@@ -25,6 +25,11 @@ class MainApp(CTk):
         self.valoresMatrizViento = {}
         self.valoresMatrizAltura = {}
 
+        
+        self.combo_predeterminado = None
+
+        self.ruta = None
+
 
   
         #Decoración y Fondo de app
@@ -158,6 +163,8 @@ class MainApp(CTk):
                     entry.grid(row=fila, column=columna, sticky="nsew", padx=2, pady=2)  # Ajustar tamaño y posición
                     # Guardar la entrada en el diccionario usando la posición como clave
                     entries[(fila, columna)] = entry
+          
+            
 
             # Función para obtener los valores de todas las entradas
             def obtener_valores():
@@ -169,11 +176,12 @@ class MainApp(CTk):
                         return  # Detener el guardado
 
                     # Convertir coordenadas según el sistema y guardar el valor
-                    self.valoresMatrizViento[(columna - 1, 1 - fila)] = valor
+                    self.valoresMatrizViento[(fila, columna)] = float(valor)
                 
-                # Si todo es válido, imprimir los valores
-                print("Valores de las entradas (transformados):", self.valoresMatrizViento)
+                # Si todo es válido, imprimir los valores                
                 messagebox.showinfo("Éxito", "Matriz de viento guardada correctamente.")
+                self.valoresMatrizViento[(1, 1)] = 0.0
+                print("Valores de las entradas (transformados):", self.valoresMatrizViento)
                 nueva_Ventana.destroy()
 
     
@@ -244,11 +252,13 @@ class MainApp(CTk):
                         return  # Detener el guardado
 
                     # Convertir coordenadas según el sistema y guardar el valor
-                    self.valoresMatrizAltura[(columna - 1, 1 - fila)] = valor
+                    self.valoresMatrizAltura[(fila, columna)] = float(valor)
                 
                 # Si todo es válido, imprimir los valores
-                print("Valores de las entradas (transformados):", self.valoresMatrizViento)
+                print("Valores de las entradas (transformados):", self.valoresMatrizAltura)
                 messagebox.showinfo("Éxito", "Matriz de Altura guardada correctamente.")
+                self.valoresMatrizAltura[(1, 1)] = 0.0
+                nueva_Ventana.destroy()
 
 
         velocidad = Utilidades.mediumText(panelIzquierdo, "Velocidad del Viento")
@@ -296,7 +306,9 @@ class MainApp(CTk):
 
 
         # Lista inicial para el ComboBox de los mapas predeterminados
-        opciones_mapas = ["Mapa1", "Mapa2", "Mapa3"]
+        opciones_mapas = ["Amazonía - Manaos", "Canadá - Québec", "Grecia - Evros"]
+
+        
     
         
         # Función para manejar los cambios en el ComboBox principal
@@ -315,13 +327,13 @@ class MainApp(CTk):
             # Mostrar contenido según la opción seleccionada
             if opcion_seleccionada == "Predeterminado":
                 # Crear un nuevo ComboBox con las opciones predeterminadas
-                combo_predeterminado = CTkComboBox(
+                self.combo_predeterminado = CTkComboBox(
                     frame_dinamico,
                     values=opciones_mapas,
                     state = "readonly"
                 )
-                combo_predeterminado.set("Seleccionar valor...")
-                combo_predeterminado.pack(side = "left", padx = 20, pady = 5)
+                self.combo_predeterminado.set("Seleccionar valor...")
+                self.combo_predeterminado.pack(side = "left", padx = 20, pady = 5)
 
             elif opcion_seleccionada == "Customizado":
                 # Crear un botón para customizar el mapa
@@ -345,10 +357,22 @@ class MainApp(CTk):
                     "verde",
                     360,
                     35,
-                    lambda: None
+                    lambda: seleccionar_archivo()
 
                 )
                 boton_imagen.pack(side = "left", padx = 20, pady = 5)
+
+                def seleccionar_archivo():
+                    # Abrir el explorador de archivos
+                    ruta_archivo = filedialog.askopenfilename(
+                        title="Seleccionar archivo",
+                        filetypes=[("Todos los archivos", "*.*"), ("PDF Files", "*.pdf"), ("Imágenes", "*.jpg;*.png;*.jpeg")]
+                    )
+
+                    if ruta_archivo:  # Verificar si se seleccionó un archivo
+                        self.ruta = ruta_archivo
+                        print(f"Archivo seleccionado: {self.ruta}")
+                        messagebox.showinfo("Archivo Seleccionado", f"Archivo seleccionado:\n{self.ruta}")
 
         # Crear el ComboBox principal
         opciones_principales = ["Seleccionar...", "Predeterminado", "Customizado", "Imagen"]
@@ -397,7 +421,7 @@ class MainApp(CTk):
 
                 self.diccionarioValores["matrizAltura"] = self.valoresMatrizAltura
 
-            else: self.diccionarioValores["matrizViento"] = self.valoresMatrizAltura
+            else: self.diccionarioValores["matrizAltura"] = self.valoresMatrizAltura
 
             if entradaVelocidad.get() == "":
                 self.diccionarioValores["velocidad"] = 0
@@ -413,6 +437,51 @@ class MainApp(CTk):
                 self.diccionarioValores["densidadVegetacion"] = 0
             else:
                 self.diccionarioValores["densidadVegetacion"] = float(entradaDensidadVegetacion.get())
+
+
+            if combo_principal.get() == "Predeterminado":
+
+                if self.combo_predeterminado.get() == "Amazonía - Manaos":
+
+                    simulacion = simulacionFuego.ejecutarSimulacion(self.diccionarioValores)
+                    matrizImagen = simulacion.procesar_imagen_a_matriz("amazonia_manaos.png", 500, 500)
+                    simulacion.iniciar_juego(matrizImagen)
+
+                elif self.combo_predeterminado.get() == "Canadá - Québec":
+
+                    simulacion = simulacionFuego.ejecutarSimulacion(self.diccionarioValores)
+                    matrizImagen = simulacion.procesar_imagen_a_matriz("quebec_canada.png", 500, 500)
+                    simulacion.iniciar_juego(matrizImagen)
+
+                elif self.combo_predeterminado.get() == "Grecia - Evros":
+
+                    simulacion = simulacionFuego.ejecutarSimulacion(self.diccionarioValores)
+                    matrizImagen = simulacion.procesar_imagen_a_matriz("evros_grecia.png", 500, 500)
+                    simulacion.iniciar_juego(matrizImagen)
+          
+                
+                
+
+            elif combo_principal.get() == "Customizado":
+
+                print("xd")
+
+            elif combo_principal.get() == "Imagen":
+
+                if self.ruta != None:
+
+                    simulacion = simulacionFuego.ejecutarSimulacion(self.diccionarioValores)
+                    matrizImagen = simulacion.procesar_imagen_a_matriz(self.ruta, 500, 500)
+                    simulacion.iniciar_juego(matrizImagen)
+
+
+    
+      
+    
+
+if __name__ == "__main__":
+    app = MainApp()
+    app.mainloop()
 
 
 
