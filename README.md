@@ -17,6 +17,10 @@ Resalta la capacidad para que el usuario ingrese imágenes propias para generar 
 
 NOTA: Si desea subir un mapa personalizado para ejemplificar, tome la captura del portal https://snazzymaps.com/style/606702/mapa-automatas para personalizar Google Maps de manera que no aparezcan etiquetas que interfieran con el programa.
 
+ENLACE DEL VIDEO:
+
+https://youtu.be/RAWl0RVWzqk
+
 
 ## Authors
 
