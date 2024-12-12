@@ -23,3 +23,9 @@ NOTA: Si desea subir un mapa personalizado para ejemplificar, tome la captura de
 - [Iván Augusto Camargo López - 2230033](https://github.com/popcorner893)
 - [Alejandro Castro Rondón - 2230045](https://github.com/tattooedbones)
 - [Juan José Rincón - 2202018 ]
+
+
+<div id="header" align="center">
+  <img src="https://github.com/popcorner893/SimulacionIncendios/blob/main/Infografia%20proyecto_page-0001.jpg"/>
+</div>
+
