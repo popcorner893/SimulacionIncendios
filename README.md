@@ -15,6 +15,8 @@ El programa se convierte, entonces, en una herramienta útil para los organismos
 
 Resalta la capacidad para que el usuario ingrese imágenes propias para generar mapas de propagación sobre ellas. El programa presenta una alta versatilidad y portabilidad para diferentes escenarios.
 
+NOTA: Si desea subir un mapa personalizado para ejemplificar, tome la captura del portal https://snazzymaps.com/style/606702/mapa-automatas para personalizar Google Maps de manera que no aparezcan etiquetas que interfieran con el programa.
+
 
 ## Authors
 
